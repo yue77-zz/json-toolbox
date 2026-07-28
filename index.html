@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON工具箱 - 在线JSON格式化、压缩、验证、转换 | 免费在线工具</title>
+    <meta name="description" content="免费在线JSON工具箱：格式化、压缩、验证、转CSV、转XML、JSON Path查询等。无需安装，打开即用，程序员必备工具。">
+    <meta name="keywords" content="JSON格式化,JSON压缩,JSON验证,JSON转CSV,在线JSON工具,JSON editor,JSON formatter,JSON beautifier">
+    <meta name="author" content="JSON工具箱">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #6366F1;
+            --primary-dark: #3730A3;
+            --accent: #10B981;
+            --accent-light: #34D399;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text: #1E293B;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --radius: 12px;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px 20px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 8px 20px;
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .nav-tab:hover {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary-light);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tool-panel {
+            display: none;
+        }
+
+        .tool-panel.active {
+            display: block;
+        }
+
+        /* Editor Layout */
+        .editor-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .editor-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .editor-pane {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .pane-header {
+            background: var(--bg);
+            padding: 12px 16px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pane-header .stats {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .pane-body textarea, .pane-body .output-area {
+            width: 100%;
+            min-height: 350px;
+            padding: 16px;
+            border: none;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            resize: vertical;
+            outline: none;
+            background: white;
+            color: var(--text);
+        }
+
+        .pane-body textarea:focus {
+            background: #FEFEFE;
+        }
+
+        .output-area {
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .output-area.success { color: var(--success); }
+        .output-area.error { color: var(--error); }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-accent:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: var(--card-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg);
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+        }
+
+        /* Options Row */
+        .options-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 12px 16px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-group label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .option-group select, .option-group input[type="number"] {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 12px 24px;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--error); }
+
+        /* Ad Placeholder */
+        .ad-slot {
+            background: var(--bg);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin: 16px 0;
+        }
+
+        /* Tip Card */
+        .tip-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px 20px;
+            margin: 16px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .tip-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .tip-content h3 {
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .tip-content p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Diff Viewer */
+        .diff-line {
+            padding: 2px 8px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .diff-added { background: #D1FAE5; color: #065F46; }
+        .diff-removed { background: #FEE2E2; color: #991B1B; }
+        .diff-unchanged { color: var(--text-secondary); }
+
+        /* JSON Path Result */
+        .path-result {
+            padding: 12px;
+            background: #F0FDF4;
+            border-radius: 8px;
+            border: 1px solid #BBF7D0;
+            margin-top: 8px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .stat-item {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-icon { font-size: 18px; }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Support Banner */
+        .support-banner {
+            background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .support-banner .support-text {
+            font-size: 14px;
+            color: #92400E;
+        }
+
+        .support-banner .support-text strong {
+            color: #78350F;
+        }
+
+        /* Single pane layout */
+        .single-pane {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .single-pane textarea, .single-pane .output-area {
+            min-height: 300px;
+        }
+
+        /* Dark code background */
+        .dark-code {
+            background: #1E293B !important;
+            color: #E2E8F0 !important;
+        }
+
+        .dark-code:focus {
+            background: #1E293B !important;
+        }
+
+        /* Comparison Layout */
+        .comparison-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        /* Highlight animation */
+        @keyframes highlight {
+            0% { background-color: #FEF3C7; }
+            100% { background-color: transparent; }
+        }
+
+        .highlight-flash {
+            animation: highlight 1s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 22px; }
+            .nav-tab { padding: 6px 14px; font-size: 12px; }
+            .btn { padding: 8px 16px; font-size: 13px; }
+            .container { padding: 12px; }
+            .pane-body textarea, .pane-body .output-area { min-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <h1>🔧 JSON 工具箱</h1>
+    <p>免费在线JSON处理工具 · 打开即用 · 无需安装</p>
+</header>
+
+<!-- Navigation -->
+<nav class="nav-tabs" id="navTabs">
+    <div class="nav-tab active" data-panel="format">格式化</div>
+    <div class="nav-tab" data-panel="compress">压缩</div>
+    <div class="nav-tab" data-panel="validate">验证</div>
+    <div class="nav-tab" data-panel="csv">转CSV</div>
+    <div class="nav-tab" data-panel="xml">转XML</div>
+    <div class="nav-tab" data-panel="path">Path查询</div>
+    <div class="nav-tab" data-panel="diff">对比</div>
+    <div class="nav-tab" data-panel="tree">树形视图</div>
+</nav>
+
+<!-- Ad Slot Top -->
+<div class="container">
+    <div class="ad-slot" id="adSlotTop">
+        <!-- 广告位：可替换为 Google AdSense 或其他广告代码 -->
+        📢 广告位招商 — 联系: your-email@example.com
+    </div>
+</div>
+
+<!-- Main Content -->
+<main class="container">
+
+    <!-- Panel: Format -->
+    <div class="tool-panel active" id="panel-format">
+        <div class="options-row">
+            <div class="option-group">
+                <label>缩进空格数：</label>
+                <select id="indentSize">
+                    <option value="2">2 空格</option>
+                    <option value="4">4 空格</option>
+                    <option value="8">8 空格</option>
+                    <option value="1">1 Tab</option>
+                </select>
+            </div>
+            <div class="option-group">
+                <label>排序键名：</label>
+                <select id="sortKeys">
+                    <option value="none">不排序</option>
+                    <option value="asc">升序</option>
+                    <option value="desc">降序</option>
+                </select>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" onclick="formatJSON()">✨ 格式化</button>
+            <button class="btn btn-outline" onclick="copyOutput('format')">📋 复制结果</button>
+            <button class="btn btn-outline" onclick="downloadOutput('format', 'formatted.json')">💾 下载</button>
+            <button class="btn btn-outline" onclick="loadSample('format')">📝 加载示例</button>
+            <button class="btn btn-danger" onclick="clearAll('format')">🗑 清空</button>
+        </div>
+        <div class="editor-layout">
+            <div class="editor-pane">
+                <div class="pane-header">
+                    输入 JSON
+                    <span class="stats" id="formatInputStats"></span>
+                </div>
+                <div class="pane-body">
+                    <textarea id="formatInput" placeholder="在此粘贴或输入 JSON 数据..." spellcheck="false"></textarea>
+                </div>
+            </div>
+            <div class="editor-pane">
+                <div class="pane-header">
+                    格式化结果
+                    <span class="stats" id="formatOutputStats"></span>
+                </div>
+                <div class="pane-body">
+                    <textarea id="formatOutput" readonly placeholder="格式化后的 JSON..." spellcheck="false"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel: Compress -->
+    <div class="tool-panel" id="panel-compress">
+        <div class="actions">
+            <button class="btn btn-primary" onclick="compressJSON()">⚡ 压缩</button>
+            <button class="btn btn-outline" onclick="copyOutput('compress')">📋 复制结果</button>
+            <button class="btn btn-outline" onclick="downloadOutput('compress', 'compressed.json')">💾 下载</button>
+            <button class="btn btn-outline" onclick="loadSample('compress')">📝 加载示例</button>
+            <button class="btn btn-danger" onclick="clearAll('compress')">🗑 清空</button>
+        </div>
+        <div class="editor-layout">
+            <div class="editor-pane">
+                <div class="pane-header">输入 JSON <span class="stats" id="compressInputStats"></span></div>
+                <div class="pane-body"><textarea id="compressInput" placeholder="在此粘贴需要压缩的 JSON..." spellcheck="false"></textarea></div>
+            </div>
+            <div class="editor-pane">
+                <div class="pane-header">压缩结果 <span class="stats" id="compressOutputStats"></span></div>
+                <div class="pane-body"><textarea id="compressOutput" readonly placeholder="压缩后的 JSON..." spellcheck="false"></textarea></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel: Validate -->
+    <div class="tool-panel" id="panel-validate">
+        <div class="actions">
+            <button class="btn btn-primary" onclick="validateJSON()">✅ 验证</button>
+            <button class="btn btn-outline" onclick="loadSample('validate')">📝 加载示例</button>
+            <button class="btn btn-danger" onclick="clearAll('validate')">🗑 清空</button>
+        </div>
+        <div class="editor-layout">
+            <div class="editor-pane">
+                <div class="pane-header">输入 JSON</div>
+                <div class="pane-body"><textarea id="validateInput" placeholder="在此粘贴需要验证的 JSON..." spellcheck="false"></textarea></div>
+            </div>
+            <div class="editor-pane">
+                <div class="pane-header">验证结果</div>
+                <div class="pane-body"><div id="validateOutput" class="output-area" style="padding:16px;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel: CSV -->
+    <div class="tool-panel" id="panel-csv">
+        <div class="tip-card">
+            <div class="tip-icon">💡</div>
+            <div class="tip-content">
+                <h3>JSON 转 CSV 说明</h3>
+                <p>支持 JSON 数组格式（如 [{"name":"张三","age":25},...]），数组中每个对象转为一行，键名作为表头。</p>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" onclick="jsonToCSV()">📊 转换为CSV</button>
+            <button class="btn btn-outline" onclick="copyOutput('csv')">📋 复制结果</button>
+            <button class="btn btn-outline" onclick="downloadOutput('csv', 'data.csv')">💾 下载CSV</button>
+            <button class="btn btn-outline" onclick="loadSample('csv')">📝 加载示例</button>
+            <button class="btn btn-danger" onclick="clearAll('csv')">🗑 清空</button>
+        </div>
+        <div class="editor-layout">
+            <div class="editor-pane">
+                <div class="pane-header">输入 JSON 数组</div>
+                <div class="pane-body"><textarea id="csvInput" placeholder='粘贴 JSON 数组，如 [{"name":"张三","age":25}]...' spellcheck="false"></textarea></div>
+            </div>
+            <div class="editor-pane">
+                <div class="pane-header">CSV 结果</div>
+                <div class="pane-body"><textarea id="csvOutput" readonly placeholder="转换后的 CSV 数据..." spellcheck="false"></textarea></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel: XML -->
+    <div class="tool-panel" id="panel-xml">
+        <div class="actions">
+            <button class="btn btn-primary" onclick="jsonToXML()">🔄 转换为XML</button>
+            <button class="btn btn-outline" onclick="copyOutput('xml')">📋 复制结果</button>
+            <button class="btn btn-outline" onclick="downloadOutput('xml', 'data.xml')">💾 下载XML</button>
+            <button class="btn btn-outline" onclick="loadSample('xml')">📝 加载示例</button>
+            <button class="btn btn-danger" onclick="clearAll('xml')">🗑 清空</button>
+        </div>
+        <div class="editor-layout">
+            <div class="editor-pane">
+                <div class="pane-header">输入 JSON</div>
+                <div class="pane-body"><textarea id="xmlInput" placeholder="在此粘贴需要转为 XML 的 JSON..." spellcheck="false"></textarea></div>
+            </div>
+            <div class="editor-pane">
+                <div class="pane-header">XML 结果</div>
+                <div class="pane-body"><textarea id="xmlOutput" readonly placeholder="转换后的 XML 数据..." spellcheck="false"></textarea></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel: Path -->
+    <div class="tool-panel" id="panel-path">
+        <div class="tip-card">
+            <div class="tip-icon">💡</div>
+            <div class="tip-content">
+                <h3>JSON Path 查询</h3>
+                <p>支持简单路径语法：如 <code>users[0].name</code>、<code>data.items</code>，用点号访问属性，方括号访问数组索引。</p>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" onclick="queryJSONPath()">🔍 查询</button>
+            <button class="btn btn-outline" onclick="loadSample('path')">📝 加载示例</button>
+            <button class="btn btn-danger" onclick="clearAll('path')">🗑 清空</button>
+        </div>
+        <div class="editor-layout">
+            <div class="editor-pane">
+                <div class="pane-header">输入 JSON</div>
+                <div class="pane-body"><textarea id="pathInput" placeholder="在此粘贴 JSON 数据..." spellcheck="false"></textarea></div>
+            </div>
+            <div class="editor-pane">
+                <div class="pane-header">查询路径：<input type="text" id="pathExpr" placeholder="如 users[0].name" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;width:200px;font-size:13px;"></div>
+                <div class="pane-body"><div id="pathOutput" class="output-area" style="padding:16px;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel: Diff -->
+    <div class="tool-panel" id="panel-diff">
+        <div class="actions">
+            <button class="btn btn-primary" onclick="diffJSON()">🔀 对比差异</button>
+            <button class="btn btn-outline" onclick="loadSample('diff')">📝 加载示例</button>
+            <button class="btn btn-danger" onclick="clearAll('diff')">🗑 清空</button>
+        </div>
+        <div class="comparison-layout">
+            <div class="editor-pane">
+                <div class="pane-header">JSON A（旧）</div>
+                <div class="pane-body"><textarea id="diffInputA" placeholder="粘贴旧版 JSON..." spellcheck="false"></textarea></div>
+            </div>
+            <div class="editor-pane">
+                <div class="pane-header">JSON B（新）</div>
+                <div class="pane-body"><textarea id="diffInputB" placeholder="粘贴新版 JSON..." spellcheck="false"></textarea></div>
+            </div>
+        </div>
+        <div style="margin-top:16px;">
+            <div class="editor-pane">
+                <div class="pane-header">差异结果</div>
+                <div class="pane-body"><div id="diffOutput" class="output-area" style="padding:16px;min-height:200px;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel: Tree View -->
+    <div class="tool-panel" id="panel-tree">
+        <div class="actions">
+            <button class="btn btn-primary" onclick="renderTreeView()">🌳 生成树形视图</button>
+            <button class="btn btn-outline" onclick="loadSample('tree')">📝 加载示例</button>
+            <button class="btn btn-danger" onclick="clearAll('tree')">🗑 清空</button>
+        </div>
+        <div class="editor-layout">
+            <div class="editor-pane">
+                <div class="pane-header">输入 JSON</div>
+                <div class="pane-body"><textarea id="treeInput" placeholder="在此粘贴 JSON 数据..." spellcheck="false"></textarea></div>
+            </div>
+            <div class="editor-pane">
+                <div class="pane-header">树形视图</div>
+                <div class="pane-body"><div id="treeOutput" class="output-area" style="padding:16px;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support / Revenue Banner -->
+    <div class="support-banner" id="supportBanner">
+        <div class="support-text">
+            ❤️ <strong>觉得工具好用？</strong>一杯咖啡的钱，支持我们持续维护和更新！
+        </div>
+        <div style="display:flex;gap:8px;">
+            <!-- 替换为你的实际收款链接 -->
+            <button class="btn btn-accent" onclick="showToast('感谢支持！请扫码或点击下方链接打赏 ☕', 'success')">☕ 打赏 5 元</button>
+            <button class="btn btn-primary" onclick="showToast('感谢支持！请扫码或点击下方链接打赏 🍜', 'success')">🍜 打赏 10 元</button>
+        </div>
+    </div>
+
+    <!-- Ad Slot Bottom -->
+    <div class="ad-slot" id="adSlotBottom">
+        <!-- 广告位：可替换为 Google AdSense 或其他广告代码 -->
+        📢 广告位招商 — 联系: your-email@example.com
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>JSON工具箱 · 免费在线工具 · 数据安全（所有处理在本地完成，不上传任何数据）</p>
+    <p style="margin-top:8px;">Made with ❤️ | © 2024 JSON工具箱</p>
+</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+    // === Navigation ===
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+        });
+    });
+
+    // === Toast ===
+    function showToast(msg, type = '') {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.className = 'toast show ' + type;
+        setTimeout(() => toast.className = 'toast', 2500);
+    }
+
+    // === Stats ===
+    function updateStats(inputId, statsId) {
+        const input = document.getElementById(inputId);
+        const stats = document.getElementById(statsId);
+        if (!input || !stats) return;
+        const text = input.value;
+        const bytes = new Blob([text]).size;
+        const lines = text ? text.split('\n').length : 0;
+        stats.textContent = `${bytes} 字节 · ${lines} 行`;
+    }
+
+    // Listen for input changes
+    ['formatInput', 'compressInput', 'validateInput', 'csvInput', 'xmlInput', 'pathInput', 'treeInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => {
+                const panel = id.replace('Input', '');
+                const statsId = panel + 'InputStats';
+                updateStats(id, statsId);
+            });
+        }
+    });
+
+    // === Sample Data ===
+    const sampleJSON = {
+        "company": "示例科技有限公司",
+        "founded": 2015,
+        "active": true,
+        "employees": [
+            {"name": "张三", "age": 28, "role": "前端工程师", "skills": ["JavaScript", "React", "Vue"]},
+            {"name": "李四", "age": 32, "role": "后端工程师", "skills": ["Python", "Java", "Go"]},
+            {"name": "王五", "age": 25, "role": "设计师", "skills": ["Figma", "Photoshop", "Illustrator"]}
+        ],
+        "products": [
+            {"id": "P001", "name": "云文档", "price": 99.9, "tags": ["办公", "协作"]},
+            {"id": "P002", "name": "智能助手", "price": 199.0, "tags": ["AI", "效率"]}
+        ],
+        "address": {
+            "city": "北京",
+            "district": "海淀区",
+            "street": "中关村大街1号"
+        }
+    };
+
+    function loadSample(panel) {
+        const inputMap = {
+            format: 'formatInput',
+            compress: 'compressInput',
+            validate: 'validateInput',
+            csv: 'csvInput',
+            xml: 'xmlInput',
+            path: 'pathInput',
+            tree: 'treeInput',
+        };
+        if (panel === 'diff') {
+            document.getElementById('diffInputA').value = JSON.stringify(sampleJSON, null, 2);
+            const modified = JSON.parse(JSON.stringify(sampleJSON));
+            modified.company = "新示例科技有限公司";
+            modified.employees.push({"name": "赵六", "age": 30, "role": "测试工程师", "skills": ["Selenium", "JMeter"]});
+            modified.products[0].price = 89.9;
+            document.getElementById('diffInputB').value = JSON.stringify(modified, null, 2);
+            return;
+        }
+        const el = document.getElementById(inputMap[panel]);
+        if (el) {
+            // For CSV, only load the array part
+            if (panel === 'csv') {
+                el.value = JSON.stringify(sampleJSON.employees, null, 2);
+            } else {
+                el.value = JSON.stringify(sampleJSON, null, 2);
+            }
+            updateStats(inputMap[panel], panel + 'InputStats');
+            showToast('示例数据已加载 ✅', 'success');
+        }
+    }
+
+    // === Format JSON ===
+    function formatJSON() {
+        const input = document.getElementById('formatInput').value.trim();
+        if (!input) { showToast('请先输入 JSON 数据 ❌', 'error'); return; }
+        try {
+            let obj = JSON.parse(input);
+            const sortMode = document.getElementById('sortKeys').value;
+            if (sortMode !== 'none') {
+                obj = sortObjectKeys(obj, sortMode === 'asc' ? 1 : -1);
+            }
+            const indent = document.getElementById('indentSize').value;
+            const indentChar = indent === '1' ? '\t' : Number(indent);
+            const result = JSON.stringify(obj, null, indentChar);
+            document.getElementById('formatOutput').value = result;
+            const outBytes = new Blob([result]).size;
+            document.getElementById('formatOutputStats').textContent = `${outBytes} 字节`;
+            showToast('格式化完成 ✅', 'success');
+        } catch (e) {
+            document.getElementById('formatOutput').value = '';
+            showToast('JSON 格式错误：' + e.message + ' ❌', 'error');
+        }
+    }
+
+    function sortObjectKeys(obj, direction) {
+        if (Array.isArray(obj)) return obj.map(item => sortObjectKeys(item, direction));
+        if (typeof obj === 'object' && obj !== null) {
+            const sorted = {};
+            Object.keys(obj).sort((a, b) => direction * a.localeCompare(b)).forEach(key => {
+                sorted[key] = sortObjectKeys(obj[key], direction);
+            });
+            return sorted;
+        }
+        return obj;
+    }
+
+    // === Compress JSON ===
+    function compressJSON() {
+        const input = document.getElementById('compressInput').value.trim();
+        if (!input) { showToast('请先输入 JSON 数据 ❌', 'error'); return; }
+        try {
+            const obj = JSON.parse(input);
+            const result = JSON.stringify(obj);
+            document.getElementById('compressOutput').value = result;
+            const inBytes = new Blob([input]).size;
+            const outBytes = new Blob([result]).size;
+            const saved = Math.round((1 - outBytes / inBytes) * 100);
+            document.getElementById('compressOutputStats').textContent = `${outBytes} 字节 · 节省 ${saved}%`;
+            showToast(`压缩完成，节省 ${saved}% ✅`, 'success');
+        } catch (e) {
+            showToast('JSON 格式错误：' + e.message + ' ❌', 'error');
+        }
+    }
+
+    // === Validate JSON ===
+    function validateJSON() {
+        const input = document.getElementById('validateInput').value.trim();
+        const output = document.getElementById('validateOutput');
+        if (!input) { showToast('请先输入 JSON 数据 ❌', 'error'); return; }
+        try {
+            const obj = JSON.parse(input);
+            const type = Array.isArray(obj) ? '数组' : (typeof obj === 'object' ? '对象' : obj.constructor.name);
+            const count = Array.isArray(obj) ? obj.length : Object.keys(obj).length;
+            const depth = getDepth(obj);
+            output.innerHTML = `
+                <div style="color:#10B981;font-size:20px;font-weight:700;margin-bottom:12px;">✅ JSON 格式正确！</div>
+                <div class="stats-bar">
+                    <div class="stat-item"><span class="stat-icon">📦</span><div><div class="stat-value">${type}</div><div class="stat-label">数据类型</div></div></div>
+                    <div class="stat-item"><span class="stat-icon">🔢</span><div><div class="stat-value">${count}</div><div class="stat-label">${Array.isArray(obj) ? '元素数' : '键数'}</div></div></div>
+                    <div class="stat-item"><span class="stat-icon">🌊</span><div><div class="stat-value">${depth}</div><div class="stat-label">嵌套深度</div></div></div>
+                    <div class="stat-item"><span class="stat-icon">💾</span><div><div class="stat-value">${new Blob([input]).size}</div><div class="stat-label">字节大小</div></div></div>
+                </div>
+            `;
+            showToast('验证通过 ✅', 'success');
+        } catch (e) {
+            output.innerHTML = `
+                <div style="color:#EF4444;font-size:20px;font-weight:700;margin-bottom:12px;">❌ JSON 格式错误</div>
+                <div style="background:#FEE2E5;padding:12px;border-radius:8px;color:#991B1B;font-family:monospace;font-size:13px;">${e.message}</div>
+                <div style="margin-top:8px;font-size:13px;color:#64748B;">常见错误：缺少引号、多余逗号、括号不匹配等</div>
+            `;
+            showToast('JSON 格式错误 ❌', 'error');
+        }
+    }
+
+    function getDepth(obj) {
+        if (typeof obj !== 'object' || obj === null) return 0;
+        let max = 0;
+        for (const val of Object.values(obj)) {
+            max = Math.max(max, getDepth(val));
+        }
+        return max + 1;
+    }
+
+    // === JSON to CSV ===
+    function jsonToCSV() {
+        const input = document.getElementById('csvInput').value.trim();
+        if (!input) { showToast('请先输入 JSON 数据 ❌', 'error'); return; }
+        try {
+            const arr = JSON.parse(input);
+            if (!Array.isArray(arr)) { showToast('需要 JSON 数组格式 ❌', 'error'); return; }
+            if (arr.length === 0) { showToast('数组为空 ❌', 'error'); return; }
+
+            // Collect all keys
+            const keysSet = new Set();
+            arr.forEach(item => {
+                if (typeof item === 'object' && item !== null) {
+                    Object.keys(item).forEach(k => keysSet.add(k));
+                }
+            });
+            const keys = Array.from(keysSet);
+
+            let csv = keys.join(',') + '\n';
+            arr.forEach(item => {
+                const row = keys.map(k => {
+                    const val = item[k];
+                    if (val === undefined || val === null) return '';
+                    const str = typeof val === 'object' ? JSON.stringify(val) : String(val);
+                    // Escape CSV: if contains comma, quote, or newline
+                    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                        return '"' + str.replace(/"/g, '""') + '"';
+                    }
+                    return str;
+                });
+                csv += row.join(',') + '\n';
+            });
+
+            document.getElementById('csvOutput').value = csv;
+            showToast(`转换完成，${arr.length} 行数据 ✅`, 'success');
+        } catch (e) {
+            showToast('转换失败：' + e.message + ' ❌', 'error');
+        }
+    }
+
+    // === JSON to XML ===
+    function jsonToXML() {
+        const input = document.getElementById('xmlInput').value.trim();
+        if (!input) { showToast('请先输入 JSON 数据 ❌', 'error'); return; }
+        try {
+            const obj = JSON.parse(input);
+            const xml = objToXML(obj, 'root');
+            document.getElementById('xmlOutput').value = '<?xml version="1.0" encoding="UTF-8"?>\n' + xml;
+            showToast('转换完成 ✅', 'success');
+        } catch (e) {
+            showToast('转换失败：' + e.message + ' ❌', 'error');
+        }
+    }
+
+    function objToXML(obj, tagName) {
+        let xml = '';
+        if (Array.isArray(obj)) {
+            obj.forEach(item => {
+                xml += objToXML(item, tagName);
+            });
+        } else if (typeof obj === 'object' && obj !== null) {
+            xml += `<${tagName}>\n`;
+            for (const [key, val] of Object.entries(obj)) {
+                xml += objToXML(val, key);
+            }
+            xml += `</${tagName}>\n`;
+        } else {
+            const val = obj === null ? '' : String(obj);
+            xml += `<${tagName}>${val}</${tagName}>\n`;
+        }
+        return xml;
+    }
+
+    // === JSON Path Query ===
+    function queryJSONPath() {
+        const input = document.getElementById('pathInput').value.trim();
+        const path = document.getElementById('pathExpr').value.trim();
+        const output = document.getElementById('pathOutput');
+        if (!input) { showToast('请先输入 JSON 数据 ❌', 'error'); return; }
+        if (!path) { showToast('请输入查询路径 ❌', 'error'); return; }
+        try {
+            const obj = JSON.parse(input);
+            const result = evaluatePath(obj, path);
+            output.innerHTML = `
+                <div style="color:#10B981;font-weight:700;margin-bottom:8px;">🔍 查询结果</div>
+                <div class="path-result"><pre style="white-space:pre-wrap;font-family:monospace;font-size:13px;">${JSON.stringify(result, null, 2)}</pre></div>
+                <div style="margin-top:8px;font-size:12px;color:#64748B;">类型: ${typeof result === 'object' ? (Array.isArray(result) ? '数组' : '对象') : typeof result}</div>
+            `;
+            showToast('查询完成 ✅', 'success');
+        } catch (e) {
+            output.innerHTML = `<div style="color:#EF4444;">❌ ${e.message}</div>`;
+            showToast('查询失败 ❌', 'error');
+        }
+    }
+
+    function evaluatePath(obj, path) {
+        const parts = path.replace(/\[(\d+)\]/g, '.[$1]').split('.').filter(p => p);
+        let current = obj;
+        for (const part of parts) {
+            if (part.startsWith('[') && part.endsWith(']')) {
+                const idx = Number(part.slice(1, -1));
+                if (!Array.isArray(current) || idx >= current.length) throw new Error(`路径错误: 索引 ${idx} 超出范围`);
+                current = current[idx];
+            } else {
+                if (current === null || current === undefined || typeof current !== 'object') throw new Error(`路径错误: "${part}" 不存在`);
+                if (!(part in current)) throw new Error(`路径错误: 属性 "${part}" 不存在`);
+                current = current[part];
+            }
+        }
+        return current;
+    }
+
+    // === Diff ===
+    function diffJSON() {
+        const aStr = document.getElementById('diffInputA').value.trim();
+        const bStr = document.getElementById('diffInputB').value.trim();
+        const output = document.getElementById('diffOutput');
+        if (!aStr || !bStr) { showToast('请输入两份 JSON ❌', 'error'); return; }
+        try {
+            const aObj = JSON.parse(aStr);
+            const bObj = JSON.parse(bStr);
+            const diffs = findDiffs(aObj, bObj, '');
+            if (diffs.length === 0) {
+                output.innerHTML = '<div style="color:#10B981;font-weight:700;">✅ 两份 JSON 完全相同！</div>';
+                showToast('完全相同 ✅', 'success');
+            } else {
+                let html = `<div style="color:#EF4444;font-weight:700;margin-bottom:12px;">❌ 发现 ${diffs.length} 处差异</div>`;
+                diffs.forEach(d => {
+                    const cls = d.type === 'added' ? 'diff-added' : (d.type === 'removed' ? 'diff-removed' : 'diff-unchanged');
+                    const icon = d.type === 'added' ? '➕' : (d.type === 'removed' ? '➖' : '🔄');
+                    html += `<div class="${cls}">${icon} <strong>${d.path}</strong>: ${d.oldVal !== undefined ? d.oldVal : ''}${d.newVal !== undefined ? ' → ' + d.newVal : ''}</div>`;
+                });
+                output.innerHTML = html;
+                showToast(`发现 ${diffs.length} 处差异`, 'error');
+            }
+        } catch (e) {
+            showToast('JSON 解析错误：' + e.message + ' ❌', 'error');
+        }
+    }
+
+    function findDiffs(a, b, path) {
+        const diffs = [];
+        if (typeof a !== typeof b) {
+            diffs.push({path, type: 'changed', oldVal: JSON.stringify(a), newVal: JSON.stringify(b)});
+            return diffs;
+        }
+        if (Array.isArray(a) && Array.isArray(b)) {
+            const maxLen = Math.max(a.length, b.length);
+            for (let i = 0; i < maxLen; i++) {
+                const p = `${path}[${i}]`;
+                if (i >= a.length) diffs.push({path: p, type: 'added', newVal: JSON.stringify(b[i])});
+                else if (i >= b.length) diffs.push({path: p, type: 'removed', oldVal: JSON.stringify(a[i])});
+                else diffs.push(...findDiffs(a[i], b[i], p));
+            }
+        } else if (typeof a === 'object' && a !== null && b !== null) {
+            const allKeys = new Set([...Object.keys(a), ...Object.keys(b)]);
+            allKeys.forEach(k => {
+                const p = path ? `${path}.${k}` : k;
+                if (!(k in a)) diffs.push({path: p, type: 'added', newVal: JSON.stringify(b[k])});
+                else if (!(k in b)) diffs.push({path: p, type: 'removed', oldVal: JSON.stringify(a[k])});
+                else diffs.push(...findDiffs(a[k], b[k], p));
+            });
+        } else if (a !== b) {
+            diffs.push({path, type: 'changed', oldVal: String(a), newVal: String(b)});
+        }
+        return diffs;
+    }
+
+    // === Tree View ===
+    function renderTreeView() {
+        const input = document.getElementById('treeInput').value.trim();
+        const output = document.getElementById('treeOutput');
+        if (!input) { showToast('请先输入 JSON 数据 ❌', 'error'); return; }
+        try {
+            const obj = JSON.parse(input);
+            output.innerHTML = buildTreeHTML(obj, '', true);
+            showToast('树形视图生成完成 ✅', 'success');
+        } catch (e) {
+            showToast('JSON 解析错误：' + e.message + ' ❌', 'error');
+        }
+    }
+
+    function buildTreeHTML(obj, path, isRoot) {
+        const id = 'tree_' + path.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Math.random().toString(36).slice(2, 6);
+        if (Array.isArray(obj)) {
+            let html = `<div style="margin-left:0;cursor:pointer;" onclick="toggleTree('${id}')">`;
+            html += `<span id="${id}_icon" style="color:#4F46E5;">📂</span> `;
+            html += `<span style="color:#64748B;font-size:12px;">[${obj.length}]</span>`;
+            html += `<div id="${id}" style="margin-left:20px;">`;
+            obj.forEach((item, i) => {
+                html += `<div style="margin:2px 0;"><span style="color:#F59E0B;font-size:12px;">[${i}]</span> ${buildTreeHTML(item, path + '[' + i + ')', false)}</div>`;
+            });
+            html += '</div></div>';
+            return html;
+        } else if (typeof obj === 'object' && obj !== null) {
+            const keys = Object.keys(obj);
+            let html = `<div style="margin-left:0;cursor:pointer;" onclick="toggleTree('${id}')">`;
+            html += `<span id="${id}_icon" style="color:#10B981;">📦</span> `;
+            html += `<span style="color:#64748B;font-size:12px;">{${keys.length}}</span>`;
+            html += `<div id="${id}" style="margin-left:20px;">`;
+            keys.forEach(k => {
+                html += `<div style="margin:2px 0;"><span style="color:#4F46E5;font-weight:600;font-size:13px;">"${k}"</span>: ${buildTreeHTML(obj[k], path + '.' + k, false)}</div>`;
+            });
+            html += '</div></div>';
+            return html;
+        } else {
+            const typeColor = typeof obj === 'string' ? '#10B981' : (typeof obj === 'number' ? '#3B82F6' : (typeof obj === 'boolean' ? '#F59E0B' : '#64748B'));
+            return `<span style="color:${typeColor};font-size:13px;">${JSON.stringify(obj)}</span>`;
+        }
+    }
+
+    function toggleTree(id) {
+        const el = document.getElementById(id);
+        const icon = document.getElementById(id + '_icon');
+        if (el.style.display === 'none') {
+            el.style.display = 'block';
+            icon.textContent = icon.textContent === '📁' ? '📂' : (icon.textContent === '📄' ? '📦' : icon.textContent);
+        } else {
+            el.style.display = 'none';
+            icon.textContent = icon.textContent === '📂' ? '📁' : (icon.textContent === '📦' ? '📄' : icon.textContent);
+        }
+    }
+
+    // === Copy / Download / Clear ===
+    function copyOutput(panel) {
+        const outputMap = {
+            format: 'formatOutput',
+            compress: 'compressOutput',
+            csv: 'csvOutput',
+            xml: 'xmlOutput',
+        };
+        const el = document.getElementById(outputMap[panel]);
+        if (!el || !el.value) { showToast('没有可复制的内容 ❌', 'error'); return; }
+        navigator.clipboard.writeText(el.value).then(() => {
+            showToast('已复制到剪贴板 ✅', 'success');
+        }).catch(() => {
+            el.select();
+            document.execCommand('copy');
+            showToast('已复制到剪贴板 ✅', 'success');
+        });
+    }
+
+    function downloadOutput(panel, filename) {
+        const outputMap = {
+            format: 'formatOutput',
+            compress: 'compressOutput',
+            csv: 'csvOutput',
+            xml: 'xmlOutput',
+        };
+        const el = document.getElementById(outputMap[panel]);
+        if (!el || !el.value) { showToast('没有可下载的内容 ❌', 'error'); return; }
+        const blob = new Blob([el.value], {type: 'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('下载完成 ✅', 'success');
+    }
+
+    function clearAll(panel) {
+        const inputMap = {
+            format: ['formatInput', 'formatOutput', 'formatInputStats', 'formatOutputStats'],
+            compress: ['compressInput', 'compressOutput', 'compressInputStats', 'compressOutputStats'],
+            validate: ['validateInput'],
+            csv: ['csvInput', 'csvOutput'],
+            xml: ['xmlInput', 'xmlOutput'],
+            path: ['pathInput'],
+            tree: ['treeInput'],
+            diff: ['diffInputA', 'diffInputB'],
+        };
+        const ids = inputMap[panel];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.tagName === 'TEXTAREA') el.value = '';
+                else if (el.tagName === 'DIV') el.innerHTML = '';
+                else el.textContent = '';
+            }
+        });
+        // Also clear output divs
+        const outputMap = {validate: 'validateOutput', path: 'pathOutput', diff: 'diffOutput', tree: 'treeOutput'};
+        if (outputMap[panel]) {
+            document.getElementById(outputMap[panel]).innerHTML = '';
+        }
+        showToast('已清空 ✅', 'success');
+    }
+
+    // === Keyboard shortcut ===
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            const activePanel = document.querySelector('.tool-panel.active');
+            if (activePanel) {
+                const panelId = activePanel.id.replace('panel-', '');
+                const actionMap = {
+                    format: formatJSON,
+                    compress: compressJSON,
+                    validate: validateJSON,
+                    csv: jsonToCSV,
+                    xml: jsonToXML,
+                    path: queryJSONPath,
+                    diff: diffJSON,
+                    tree: renderTreeView,
+                };
+                if (actionMap[panelId]) actionMap[panelId]();
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
